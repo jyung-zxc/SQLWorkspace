@@ -121,3 +121,114 @@ INSERT ALL
         SELECT * FROM EMPLOYEE;
         
 SELECT * FROM EMP_OLD;
+
+/*
+    2. UPDATE
+     - 테이블에 저장된 데이터를 "수정"하는 구문
+     [표현법] 
+     UPDATE 테이블명
+     SET 컬렴명 = 바꿀값,
+         컬럼명 = 바꿀값, 
+         ...
+    WHERE 조건식
+*/
+-- 복사본테이블
+CREATE TABLE DEPT_COPY
+AS SELECT * FROM DEPARTMENT;
+
+SELECT * FROM DEPT_COPY;
+
+UPDATE DEPT_COPY
+SET DEPT_TITLE = '전략기획부';
+
+ROLLBACK; -- TCL문법, 변경사항(DML)을 되돌리는 명령어
+
+UPDATE DEPT_COPY
+SET DEPT_TITLE = '전략기획부'
+    WHERE DEPT_ID = 'D9';
+    
+SELECT * FROM DEPT_COPY;
+
+--EMPLOYEE 복사본 테이블
+CREATE TABLE EMP_SALARY
+AS SELECT EMP_ID, EMP_NAME, DEPT_CODE, SALARY, BONUS
+FROM EMPLOYEE;
+
+SELECT * FROM EMP_SALARY;
+-- EMP_SALARY(테이블에서 노옹철 사원의 월급을 1000만원으로 변경
+UPDATE EMP_SALARY
+SET SALARY = 10000000
+WHERE EMP_NAME = '노옹철';
+-- EMP_SALARY(테이블에서 선동일 사원의 급여를 700만원, 보너스를 0.2로 변경
+UPDATE EMP_SALARY
+SET SALARY = 7000000, 
+    BONUS = 0.2
+WHERE EMP_NAME = '선동일';
+
+-- 전체 사원들의 급여를 기존 급여의 20% 인상한 금액으로 변경
+UPDATE EMP_SALARY
+SET SALARY = (SALARY + SALARY * 0.2);
+
+/*
+    서브쿼리를 활용한 UPDATE
+    [표현법]
+    UPDATㄷ 테이블명
+    SET 컬럼명 = (서브쿼리)
+    SET (컬럼1,컬럼2) = (MULTI COLUMN 서브쿼리)
+    WHERE 조건식;
+*/
+-- EMP_SALARY(테이블에 박말똥 사원의 부서코드를 선동일 사원의 부서코드로 변경
+SELECT * FROM EMP_SALARY;
+
+UPDATE EMP_SALARY
+SET DEPT_CODE = (SELECT DEPT_CODE FROM EMP_SALARY WHERE EMP_NAME = '선동일')
+WHERE EMP_NAME = '박말동';
+
+-- 방명수 사원의 급여,보너스를 유재식 사원의 급여와 보너스 값으로 변경
+SELECT * FROM EMP_SALARY;
+
+UPDATE EMP_SALARY
+SET (SALARY,BONUS) = (SELECT SALARY, BONUS FROM EMP_SALARY WHERE EMP_NAME = '유재식')
+WHERE EMP_NAME = '방명수';
+
+-- 사번이 200번인 사원의 이름을 NULL로 변경해보기
+UPDATE EMPLOYEE
+SET EMP_NAME = NULL
+WHERE EMP_ID = 200; -- 제약조건 위배 불가
+COMMIT; -- 변경사항(DML)을 확정하는 명령어
+
+/*
+    4. DELETE
+     - 테이블에 기록된 데이터를 "행"단위로 삭제하는 구문
+     [표현법[
+     DELETE FROM 테이블명
+     WHERE 조건식
+*/
+DELETE FROM EMPLOYEE;
+
+SELECT * FROM EMPLOYEE;
+
+ROLLBACK;
+
+DELETE FROM EMPLOYEE
+WHERE EMP_NAME = '김갑생';
+
+COMMIT;
+
+-- DEPARTMENT테이블에 EMPT_ID가 D1인 부서 삭제하기
+DELETE FROM DEPARTMENT
+WHERE DEPT_ID = 'D1';
+
+/*
+    TRUNCATE
+     - 테이블의 전체 행을 모두 삭제할때 사용하는 구문
+     - 별도의 조건제시가 불가능하며 롤백도 불가능
+     - DELETE문보다 수행속도가 빠르다.
+*/
+SELECT * FROM EMP_SALARY;
+
+DELETE FROM EMP_SALARY;
+
+ROLLBACK;
+
+TRUNCATE TABLE EMP_SALARY;
